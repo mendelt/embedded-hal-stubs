@@ -1,4 +1,3 @@
-
 use embedded_hal::blocking::spi::Write;
 use std::io;
 
@@ -26,8 +25,11 @@ impl Write<u8> for SpiStub {
 
 #[cfg(test)]
 mod tests {
+    use super::*;
+
     #[test]
     fn it_works() {
-        assert_eq!(2 + 2, 4);
+        let mut stub = SpiStub {};
+        assert_eq!(stub.try_write(&[8u8, 7u8, 6u8]), Ok(()));
     }
 }
