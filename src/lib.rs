@@ -34,8 +34,16 @@ mod tests {
     use super::*;
 
     #[test]
-    fn it_works() {
+    fn should_init_stub() {
         let mut stub = SpiStub::new();
         assert_eq!(stub.try_write(&[8u8, 7u8, 6u8]), Ok(()));
+    }
+
+    #[test]
+    fn should_return_error() {
+        let mut stub = SpiStub::new();
+        stub.on_try_write(8u8, Err(TestError::StubbedError));
+        assert_eq!(stub.try_write(&[8u8, 7u8, 6u8]), Err(TestError::StubbedError));
+
     }
 }
