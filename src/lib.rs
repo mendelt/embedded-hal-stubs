@@ -1,16 +1,10 @@
 use embedded_hal::blocking::spi::Write;
-use std::io;
 
 #[derive(PartialEq, Clone, Debug)]
 pub enum TestError {
-    /// An I/O-Error occurred
-    Io(io::ErrorKind),
+    StubbedError  // An error was raised as part of a test
 }
 
-impl From<io::Error> for TestError {
-    fn from(e: io::Error) -> Self {
-        TestError::Io(e.kind())
-    }
 }
 
 pub struct SpiStub {}
