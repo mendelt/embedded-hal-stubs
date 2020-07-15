@@ -1,4 +1,4 @@
-use embedded_hal::blocking::spi::Write;
+use embedded_hal::blocking::spi::{Write, Transfer};
 
 #[derive(PartialEq, Clone, Debug)]
 pub enum TestError {
@@ -26,6 +26,14 @@ impl Write<u8> for SpiStub {
 
     fn try_write(&mut self, _: &[u8]) -> Result<(), Self::Error> {
         self.write_result.clone()
+    }
+}
+
+impl Transfer<u8> for SpiStub {
+    type Error = TestError;
+
+    fn try_transfer<'w>(&mut self, words: &'w mut [u8]) -> Result<&'w [u8], Self::Error> {
+        todo!()
     }
 }
 
