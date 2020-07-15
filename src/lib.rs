@@ -6,18 +6,18 @@ pub enum TestError {
 }
 
 pub struct SpiStub {
-    write_result: (u8, Result<(), TestError>),
+    write_result: Result<(), TestError>,
 }
 
 impl SpiStub {
     pub fn new() -> Self {
         SpiStub {
-            write_result: (0u8, Ok(())),
+            write_result: Ok(()),
         }
     }
 
-    pub fn on_try_write(&mut self, buffer: u8, result: Result<(), TestError>) {
-        self.write_result = (buffer, result)
+    pub fn on_try_write(&mut self, result: Result<(), TestError>) {
+        self.write_result = result;
     }
 }
 
