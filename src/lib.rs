@@ -1,4 +1,4 @@
-use embedded_hal::blocking::spi::{Write, Transfer};
+use embedded_hal::blocking::spi::{Transfer, Write, WriteIter};
 
 #[derive(PartialEq, Clone, Debug)]
 pub enum TestError {
@@ -37,6 +37,17 @@ impl Transfer<u8> for SpiStub {
     }
 }
 
+impl WriteIter<u8> for SpiStub {
+    type Error = TestError;
+
+    fn try_write_iter<WI>(&mut self, words: WI) -> Result<(), Self::Error>
+    where
+        WI: IntoIterator<Item = u8>,
+    {
+        todo!()
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -51,7 +62,9 @@ mod tests {
     fn should_return_error() {
         let mut stub = SpiStub::new();
         stub.on_try_write(Err(TestError::StubbedError));
-        assert_eq!(stub.try_write(&[8u8, 7u8, 6u8]), Err(TestError::StubbedError));
-
+        assert_eq!(
+            stub.try_write(&[8u8, 7u8, 6u8]),
+            Err(TestError::StubbedError)
+        );
     }
 }
