@@ -10,18 +10,18 @@ pub struct Returns<T> {
 }
 
 impl<T: Clone> Returns<T> {
-    fn values() -> Self {
+    pub fn values() -> Self {
         Returns {
             return_values: Vec::new(),
         }
     }
 
-    fn once(mut self, value: T) -> Self {
+    pub fn once(mut self, value: T) -> Self {
         self.return_values.push(value);
         self
     }
 
-    fn get_by_params(&mut self) -> T {
+    pub fn get_by_params(&mut self) -> T {
         // Todo, look up values by parameters of call
 
         let (head, tail) = self.return_values.split_first().unwrap();
