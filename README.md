@@ -1,11 +1,13 @@
-* Experimental Rust lib for mock and stub helpers for the embedded HAL library  *
+# Experimental Rust lib for mock and stub helpers for the embedded HAL library
 This is an experimental library to see if it is possible to write a test helpers for the Embedded
 HAL that allow for a more AAA (Arrange, Act, Assert) style of testing, while giving the user the
 freedom to choose to use the helpers either as Stubs or as Mocks.
 
 The main goals of this project are;
-[] Support a style of testing where you can first Arrange the behavior of test dependencies, Act out the test behaviors and afterwards Assert if the code under test performed the right actions.
-[] Support assertions that test if the test helpers provided by this library were called in the right order, even when different test helpers were used.
+- [ ] Support a style of testing where you can first Arrange the behavior of test dependencies, Act out the test behaviors and afterwards Assert if the code under test performed the right actions.
+- [ ] Support assertions that test if the test helpers provided by this library were called in the right order, even when different test helpers were used.
+- [] A fluent interface for specifying behaviors and assertions.
+- [] Support all of embedded-hal 1.0
 
 For now this is an experimental library for my own use. If you're interested in a complete library
 for writing actual tests I would recommend the [Embedded HAL Mock](https://github.com/dbrgn/embedded-hal-mock/)
