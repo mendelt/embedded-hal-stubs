@@ -129,6 +129,26 @@ mod tests {
     }
 
     #[test]
+    fn should_return_multiple_results_on_try_write() {
+        let mut stub = SpiStub::arrange()
+            .try_write(returns()
+                .once(Err(TestError::StubbedError))
+                .once(Ok(()))
+            )
+            .go();
+
+        assert_eq!(
+            stub.try_write(&[8u8, 7u8, 6u8]),
+            Err(TestError::StubbedError)
+        );
+
+        assert_eq!(
+            stub.try_write(&[8u8, 7u8, 6u8]),
+            Ok(())
+        );
+    }
+
+    #[test]
     fn should_return_error_on_try_write_iter() {
         let mut stub = SpiStub::arrange()
             .try_write_iter(Err(TestError::StubbedError))
