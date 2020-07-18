@@ -5,6 +5,8 @@ pub enum TestError {
     StubbedError, // An error was raised as part of a test
 }
 
+/// Stores the set of return values for a stubbed method where T is the return type and implements
+/// the fluent interface for specifying the return values
 pub struct Returns<T> {
     return_values: Vec<T>,
 }
