@@ -33,6 +33,12 @@ impl<T: Clone> Returns<T> {
     }
 }
 
+impl<T> Default for Returns<T> {
+    fn default() -> Self {
+        Returns {return_values: Vec::new()}
+    }
+}
+
 pub struct SpiStub {
     write_result: Returns<Result<(), TestError>>,
     write_iter_result: Result<(), TestError>,
