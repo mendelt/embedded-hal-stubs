@@ -11,31 +11,34 @@ pub struct Returns<T> {
     return_values: Vec<T>,
 }
 
-impl<T: Clone> Returns<T> {
-    pub fn values() -> Self {
-        Returns {
-            return_values: Vec::new(),
-        }
-    }
+pub fn returns<T>() -> Returns<T> {
+    Returns::default()
+}
 
+impl<T> Returns<T> {
     pub fn once(mut self, value: T) -> Self {
         self.return_values.push(value);
         self
     }
+}
 
+impl<T: Clone> Returns<T> {
     pub fn get_by_params(&mut self) -> T {
-        // Todo, look up values by parameters of call
-
-        let (head, tail) = self.return_values.split_first().unwrap();
-        let result = head.clone();
-        self.return_values = tail.to_vec();
-        result
+        if let Some((head, tail)) = self.return_values.split_first() {
+            let result = head.clone();
+            self.return_values = tail.to_vec();
+            result
+        } else {
+            panic!("No expected result available")
+        }
     }
 }
 
 impl<T> Default for Returns<T> {
     fn default() -> Self {
-        Returns {return_values: Vec::new()}
+        Returns {
+            return_values: Vec::new(),
+        }
     }
 }
 
@@ -47,7 +50,7 @@ pub struct SpiStub {
 impl SpiStub {
     pub fn arrange() -> Self {
         SpiStub {
-            write_result: Returns::values(),
+            write_result: Returns::default(),
             write_iter_result: Ok(()),
         }
     }
@@ -107,6 +110,7 @@ mod tests {
     use super::*;
 
     #[test]
+    #[should_panic(expected = "No expected result available")]
     fn should_init_stub() {
         let mut stub = SpiStub::arrange().go();
         assert_eq!(stub.try_write(&[8u8, 7u8, 6u8]), Ok(()));
@@ -115,7 +119,7 @@ mod tests {
     #[test]
     fn should_return_error_on_try_write() {
         let mut stub = SpiStub::arrange()
-            .try_write(Returns::values().once(Err(TestError::StubbedError)))
+            .try_write(returns().once(Err(TestError::StubbedError)))
             .go();
 
         assert_eq!(
