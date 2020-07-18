@@ -5,10 +5,16 @@ pub enum TestError {
     StubbedError, // An error was raised as part of a test
 }
 
+#[derive(Clone)]
+pub enum Return<T> {
+    Once(T),
+    Always(T),
+}
+
 /// Stores the set of return values for a stubbed method where T is the return type and implements
 /// the fluent interface for specifying the return values
 pub struct Returns<T> {
-    return_values: Vec<T>,
+    return_values: Vec<Return<T>>,
 }
 
 pub fn returns<T>() -> Returns<T> {
@@ -17,19 +23,21 @@ pub fn returns<T>() -> Returns<T> {
 
 impl<T> Returns<T> {
     pub fn once(mut self, value: T) -> Self {
-        self.return_values.push(value);
+        self.return_values.push(Return::Once(value));
         self
     }
 }
 
 impl<T: Clone> Returns<T> {
     pub fn get_by_params(&mut self) -> T {
-        if let Some((head, tail)) = self.return_values.split_first() {
-            let result = head.clone();
-            self.return_values = tail.to_vec();
-            result
-        } else {
-            panic!("No expected result available")
+        match self.return_values.split_first() {
+            Some((Return::Always(value), _)) => value.clone(),
+            Some((Return::Once(value), tail)) => {
+                let result = value.clone();
+                self.return_values = tail.to_vec();
+                result
+            }
+            _ => panic!("No expected result available"),
         }
     }
 }
@@ -131,10 +139,7 @@ mod tests {
     #[test]
     fn should_return_multiple_results_on_try_write() {
         let mut stub = SpiStub::arrange()
-            .try_write(returns()
-                .once(Err(TestError::StubbedError))
-                .once(Ok(()))
-            )
+            .try_write(returns().once(Err(TestError::StubbedError)).once(Ok(())))
             .go();
 
         assert_eq!(
@@ -142,10 +147,7 @@ mod tests {
             Err(TestError::StubbedError)
         );
 
-        assert_eq!(
-            stub.try_write(&[8u8, 7u8, 6u8]),
-            Ok(())
-        );
+        assert_eq!(stub.try_write(&[8u8, 7u8, 6u8]), Ok(()));
     }
 
     #[test]
