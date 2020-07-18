@@ -86,7 +86,7 @@ impl Write<u8> for SpiStubImpl {
 impl Transfer<u8> for SpiStubImpl {
     type Error = TestError;
 
-    fn try_transfer<'w>(&mut self, words: &'w mut [u8]) -> Result<&'w [u8], Self::Error> {
+    fn try_transfer<'w>(&mut self, _: &'w mut [u8]) -> Result<&'w [u8], Self::Error> {
         todo!()
     }
 }
@@ -94,7 +94,7 @@ impl Transfer<u8> for SpiStubImpl {
 impl WriteIter<u8> for SpiStubImpl {
     type Error = TestError;
 
-    fn try_write_iter<WI>(&mut self, words: WI) -> Result<(), Self::Error>
+    fn try_write_iter<WI>(&mut self, _: WI) -> Result<(), Self::Error>
     where
         WI: IntoIterator<Item = u8>,
     {
