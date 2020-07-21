@@ -104,4 +104,35 @@ mod tests {
             Err(TestError::StubbedError)
         );
     }
+
+    #[test]
+    #[should_panic(expected = "No expected result available")]
+    fn should_return_once_result_only_once() {
+        let mut stub = TestStub::arrange()
+            .test_method(returns().once(Err(TestError::StubbedError)))
+            .go();
+
+        assert_eq!(
+            stub.test_method(&[8u8, 7u8, 6u8]),
+            Err(TestError::StubbedError)
+        );
+
+        // This should panic the second time it's called
+        stub.test_method(&[8u8, 7u8, 6u8]).ok();
+    }
+
+    #[test]
+    fn should_return_always_result_multiple_times() {
+        let mut stub = TestStub::arrange()
+        .test_method(returns().always(Err(TestError::StubbedError)))
+        .go();
+
+        for _ in [0..20].iter() {
+            assert_eq!(
+                stub.test_method(&[8u8, 7u8, 6u8]),
+                Err(TestError::StubbedError)
+            );
+        }
+    }
+
 }
