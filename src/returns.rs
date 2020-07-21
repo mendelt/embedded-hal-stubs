@@ -122,10 +122,30 @@ mod tests {
     }
 
     #[test]
+    #[should_panic(expected = "No expected result available")]
+    fn should_sequence_multiple_once_results() {
+        let mut stub = TestStub::arrange()
+            .test_method(returns().once(Err(TestError::StubbedError)).once(Ok(())))
+            .go();
+
+        // The first time should return the first result
+        assert_eq!(
+            stub.test_method(&[8u8, 7u8, 6u8]),
+            Err(TestError::StubbedError)
+        );
+
+        // The second time the second result
+        assert_eq!(stub.test_method(&[8u8, 7u8, 6u8]), Ok(()));
+
+        // Panic after that
+        stub.test_method(&[8u8, 7u8, 6u8]).ok();
+    }
+
+    #[test]
     fn should_return_always_result_multiple_times() {
         let mut stub = TestStub::arrange()
-        .test_method(returns().always(Err(TestError::StubbedError)))
-        .go();
+            .test_method(returns().always(Err(TestError::StubbedError)))
+            .go();
 
         for _ in [0..20].iter() {
             assert_eq!(
@@ -135,4 +155,21 @@ mod tests {
         }
     }
 
+    #[test]
+    fn should_return_always_result_after_once() {
+        let mut stub = TestStub::arrange()
+            .test_method(returns().once(Ok(())).always(Err(TestError::StubbedError)))
+            .go();
+
+        // First return the 'once' result
+        assert_eq!(stub.test_method(&[8u8, 7u8, 6u8]), Ok(()));
+
+        // And the 'always' result after that
+        for _ in [0..20].iter() {
+            assert_eq!(
+                stub.test_method(&[8u8, 7u8, 6u8]),
+                Err(TestError::StubbedError)
+            );
+        }
+    }
 }
