@@ -47,3 +47,61 @@ impl<T> Default for Returns<T> {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::error::TestError;
+
+    struct TestStub {
+        on_test_method: Returns<Result<(), TestError>>,
+    }
+
+    impl TestStub {
+        fn arrange() -> Self {
+            TestStub {
+                on_test_method: returns().always(Ok(())),
+            }
+        }
+
+        pub fn test_method(mut self, result: Returns<Result<(), TestError>>) -> Self {
+            self.on_test_method = result;
+            self
+        }
+
+        fn go(self) -> TestStubRunner {
+            TestStubRunner {
+                on_test_method: self.on_test_method,
+            }
+        }
+    }
+
+    struct TestStubRunner {
+        on_test_method: Returns<Result<(), TestError>>,
+    }
+
+    impl TestStubRunner {
+        fn test_method(&mut self, _: &[u8]) -> Result<(), TestError> {
+            self.on_test_method.get_by_params()
+        }
+    }
+
+    #[test]
+    fn should_return_default_result() {
+        let mut stub = TestStub::arrange().go();
+
+        assert_eq!(stub.test_method(&[8u8, 7u8, 6u8]), Ok(()));
+    }
+
+    #[test]
+    fn should_return_arranged_result() {
+        let mut stub = TestStub::arrange()
+            .test_method(returns().once(Err(TestError::StubbedError)))
+            .go();
+
+        assert_eq!(
+            stub.test_method(&[8u8, 7u8, 6u8]),
+            Err(TestError::StubbedError)
+        );
+    }
+}
