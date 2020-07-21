@@ -63,7 +63,7 @@ pub struct SpiStub {
 impl SpiStub {
     pub fn arrange() -> Self {
         SpiStub {
-            write_result: Returns::default(),
+            write_result: returns().always(Ok(())),
             write_iter_result: Ok(()),
         }
     }
@@ -123,7 +123,6 @@ mod tests {
     use super::*;
 
     #[test]
-    #[should_panic(expected = "No expected result available")]
     fn should_init_stub() {
         let mut stub = SpiStub::arrange().go();
         assert_eq!(stub.try_write(&[8u8, 7u8, 6u8]), Ok(()));
