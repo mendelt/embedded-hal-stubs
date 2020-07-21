@@ -8,14 +8,14 @@ use returns::{returns, Returns};
 
 pub struct SpiStub {
     write_result: Returns<Result<(), TestError>>,
-    write_iter_result: Result<(), TestError>,
+    write_iter_result: Returns<Result<(), TestError>>,
 }
 
 impl SpiStub {
     pub fn arrange() -> Self {
         SpiStub {
             write_result: returns().always(Ok(())),
-            write_iter_result: Ok(()),
+            write_iter_result: returns().always(Ok(())),
         }
     }
 
@@ -24,7 +24,7 @@ impl SpiStub {
         self
     }
 
-    pub fn try_write_iter(mut self, result: Result<(), TestError>) -> Self {
+    pub fn try_write_iter(mut self, result: Returns<Result<(), TestError>>) -> Self {
         self.write_iter_result = result;
         self
     }
@@ -39,7 +39,7 @@ impl SpiStub {
 
 pub struct SpiStubImpl {
     write_result: Returns<Result<(), TestError>>,
-    write_iter_result: Result<(), TestError>,
+    write_iter_result: Returns<Result<(), TestError>>,
 }
 
 impl Write<u8> for SpiStubImpl {
@@ -65,7 +65,7 @@ impl WriteIter<u8> for SpiStubImpl {
     where
         WI: IntoIterator<Item = u8>,
     {
-        self.write_iter_result.clone()
+        self.write_iter_result.get_by_params()
     }
 }
 
@@ -90,7 +90,7 @@ mod tests {
     #[test]
     fn should_return_error_on_try_write_iter() {
         let mut stub = SpiStub::arrange()
-            .try_write_iter(Err(TestError::StubbedError))
+            .try_write_iter(returns().once(Err(TestError::StubbedError)))
             .go();
 
         assert_eq!(
