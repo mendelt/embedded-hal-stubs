@@ -74,51 +74,17 @@ mod tests {
     use super::*;
 
     #[test]
-    fn should_init_stub() {
+    fn should_return_default_result_for_try_write() {
         let mut stub = SpiStub::arrange().go();
         assert_eq!(stub.try_write(&[8u8, 7u8, 6u8]), Ok(()));
     }
 
     #[test]
-    fn should_return_error_on_try_write() {
+    fn should_arrange_results_for_try_write() {
         let mut stub = SpiStub::arrange()
             .try_write(returns().once(Err(TestError::StubbedError)))
             .go();
-
-        assert_eq!(
-            stub.try_write(&[8u8, 7u8, 6u8]),
-            Err(TestError::StubbedError)
-        );
-    }
-
-    #[test]
-    fn should_return_multiple_results_on_try_write() {
-        let mut stub = SpiStub::arrange()
-            .try_write(returns().once(Err(TestError::StubbedError)).once(Ok(())))
-            .go();
-
-        assert_eq!(
-            stub.try_write(&[8u8, 7u8, 6u8]),
-            Err(TestError::StubbedError)
-        );
-
-        assert_eq!(stub.try_write(&[8u8, 7u8, 6u8]), Ok(()));
-    }
-
-    #[test]
-    fn should_return_always_on_try_write() {
-        // Set up SpiStub.try_write to always return StubbedError
-        let mut stub = SpiStub::arrange()
-            .try_write(returns().always(Err(TestError::StubbedError)))
-            .go();
-
-        // Test a couple of times
-        for _ in [0..20].iter() {
-            assert_eq!(
-                stub.try_write(&[8u8, 7u8, 6u8]),
-                Err(TestError::StubbedError)
-            )
-        }
+        assert_eq!(stub.try_write(&[]), Err(TestError::StubbedError));
     }
 
     #[test]
