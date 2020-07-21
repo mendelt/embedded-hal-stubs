@@ -26,6 +26,11 @@ impl<T> Returns<T> {
         self.return_values.push(Return::Once(value));
         self
     }
+
+    pub fn always(mut self, value: T) -> Self {
+        self.return_values.push(Return::Always(value));
+        self
+    }
 }
 
 impl<T: Clone> Returns<T> {
@@ -148,6 +153,22 @@ mod tests {
         );
 
         assert_eq!(stub.try_write(&[8u8, 7u8, 6u8]), Ok(()));
+    }
+
+    #[test]
+    fn should_return_always_on_try_write() {
+        // Set up SpiStub.try_write to always return StubbedError
+        let mut stub = SpiStub::arrange()
+            .try_write(returns().always(Err(TestError::StubbedError)))
+            .go();
+
+        // Test a couple of times
+        for _ in [0..20].iter() {
+            assert_eq!(
+                stub.try_write(&[8u8, 7u8, 6u8]),
+                Err(TestError::StubbedError)
+            )
+        }
     }
 
     #[test]
