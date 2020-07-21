@@ -88,7 +88,13 @@ mod tests {
     }
 
     #[test]
-    fn should_return_error_on_try_write_iter() {
+    fn should_return_default_result_for_try_write_iter() {
+        let mut stub = SpiStub::arrange().go();
+        assert_eq!(stub.try_write_iter(vec![]), Ok(()));
+    }
+
+    #[test]
+    fn should_arrange_results_for_try_write_iter() {
         let mut stub = SpiStub::arrange()
             .try_write_iter(returns().once(Err(TestError::StubbedError)))
             .go();
