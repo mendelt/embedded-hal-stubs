@@ -7,46 +7,46 @@ use crate::error::TestError;
 use returns::{returns, Returns};
 
 pub struct SpiStub {
-    write_result: Returns<Result<(), TestError>>,
-    write_iter_result: Returns<Result<(), TestError>>,
+    on_write: Returns<Result<(), TestError>>,
+    on_write_iter: Returns<Result<(), TestError>>,
 }
 
 impl SpiStub {
     pub fn arrange() -> Self {
         SpiStub {
-            write_result: returns().always(Ok(())),
-            write_iter_result: returns().always(Ok(())),
+            on_write: returns().always(Ok(())),
+            on_write_iter: returns().always(Ok(())),
         }
     }
 
     pub fn try_write(mut self, values: Returns<Result<(), TestError>>) -> Self {
-        self.write_result = values;
+        self.on_write = values;
         self
     }
 
     pub fn try_write_iter(mut self, result: Returns<Result<(), TestError>>) -> Self {
-        self.write_iter_result = result;
+        self.on_write_iter = result;
         self
     }
 
     pub fn go(self) -> SpiStubRunner {
         SpiStubRunner {
-            write_result: self.write_result,
-            write_iter_result: self.write_iter_result,
+            on_write: self.on_write,
+            on_write_iter: self.on_write_iter,
         }
     }
 }
 
 pub struct SpiStubRunner {
-    write_result: Returns<Result<(), TestError>>,
-    write_iter_result: Returns<Result<(), TestError>>,
+    on_write: Returns<Result<(), TestError>>,
+    on_write_iter: Returns<Result<(), TestError>>,
 }
 
 impl Write<u8> for SpiStubRunner {
     type Error = TestError;
 
     fn try_write(&mut self, _: &[u8]) -> Result<(), Self::Error> {
-        self.write_result.get_by_params()
+        self.on_write.get_by_params()
     }
 }
 
@@ -65,7 +65,7 @@ impl WriteIter<u8> for SpiStubRunner {
     where
         WI: IntoIterator<Item = u8>,
     {
-        self.write_iter_result.get_by_params()
+        self.on_write_iter.get_by_params()
     }
 }
 
