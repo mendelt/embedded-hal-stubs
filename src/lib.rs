@@ -29,20 +29,20 @@ impl SpiStub {
         self
     }
 
-    pub fn go(self) -> SpiStubImpl {
-        SpiStubImpl {
+    pub fn go(self) -> SpiStubRunner {
+        SpiStubRunner {
             write_result: self.write_result,
             write_iter_result: self.write_iter_result,
         }
     }
 }
 
-pub struct SpiStubImpl {
+pub struct SpiStubRunner {
     write_result: Returns<Result<(), TestError>>,
     write_iter_result: Returns<Result<(), TestError>>,
 }
 
-impl Write<u8> for SpiStubImpl {
+impl Write<u8> for SpiStubRunner {
     type Error = TestError;
 
     fn try_write(&mut self, _: &[u8]) -> Result<(), Self::Error> {
@@ -50,7 +50,7 @@ impl Write<u8> for SpiStubImpl {
     }
 }
 
-impl Transfer<u8> for SpiStubImpl {
+impl Transfer<u8> for SpiStubRunner {
     type Error = TestError;
 
     fn try_transfer<'w>(&mut self, _: &'w mut [u8]) -> Result<&'w [u8], Self::Error> {
@@ -58,7 +58,7 @@ impl Transfer<u8> for SpiStubImpl {
     }
 }
 
-impl WriteIter<u8> for SpiStubImpl {
+impl WriteIter<u8> for SpiStubRunner {
     type Error = TestError;
 
     fn try_write_iter<WI>(&mut self, _: WI) -> Result<(), Self::Error>
