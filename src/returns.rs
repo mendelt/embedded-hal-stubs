@@ -1,6 +1,6 @@
 #[derive(Clone)]
 pub enum Return<R> {
-    Once(R),
+    Times(R, i32),
     Always(R),
 }
 
@@ -13,7 +13,7 @@ pub fn returns<R>(value: R) -> ReturnsBuilder<R> {
 
 impl<R> ReturnsBuilder<R> {
     pub fn once(mut self) -> Returns<R> {
-        self.previous.return_values.push(Return::Once(self.new_result));
+        self.previous.return_values.push(Return::Times(self.new_result, 1));
         self.previous
     }
 
@@ -47,7 +47,7 @@ impl<R: Clone> Returns<R> {
     pub fn get_by_params(&mut self) -> R {
         match self.return_values.split_first() {
             Some((Return::Always(value), _)) => value.clone(),
-            Some((Return::Once(value), tail)) => {
+            Some((Return::Times(value, 1), tail)) => {
                 let result = value.clone();
                 self.return_values = tail.to_vec();
                 result
