@@ -1,3 +1,3 @@
 pub mod blocking;
-mod error;
-mod returns;
+pub mod error;
+pub mod returns;
