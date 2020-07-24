@@ -1,41 +1,41 @@
 #[derive(Clone)]
-pub enum Return<T> {
-    Once(T),
-    Always(T),
+pub enum Return<R> {
+    Once(R),
+    Always(R),
 }
 
-pub fn returns<T>(value: T) -> ReturnsBuilder<T> {
+pub fn returns<R>(value: R) -> ReturnsBuilder<R> {
     ReturnsBuilder {
         previous: Returns::default(),
         new_result: value
     }
 }
 
-impl<T> ReturnsBuilder<T> {
-    pub fn once(mut self) -> Returns<T> {
+impl<R> ReturnsBuilder<R> {
+    pub fn once(mut self) -> Returns<R> {
         self.previous.return_values.push(Return::Once(self.new_result));
         self.previous
     }
 
-    pub fn always(mut self) -> Returns<T> {
+    pub fn always(mut self) -> Returns<R> {
         self.previous.return_values.push(Return::Always(self.new_result));
         self.previous
     }
 }
 
-pub struct ReturnsBuilder<T> {
-    pub(self) previous: Returns<T>,
-    pub(self) new_result: T
+pub struct ReturnsBuilder<R> {
+    pub(self) previous: Returns<R>,
+    pub(self) new_result: R
 }
 
 /// Stores the set of return values for a stubbed method where T is the return type and implements
 /// the fluent interface for specifying the return values
-pub struct Returns<T> {
-    pub(self) return_values: Vec<Return<T>>,
+pub struct Returns<R> {
+    pub(self) return_values: Vec<Return<R>>,
 }
 
-impl<T> Returns<T> {
-    pub fn returns(self, value: T) -> ReturnsBuilder<T> {
+impl<R> Returns<R> {
+    pub fn returns(self, value: R) -> ReturnsBuilder<R> {
         ReturnsBuilder {
             previous: self,
             new_result: value
@@ -43,8 +43,8 @@ impl<T> Returns<T> {
     }
 }
 
-impl<T: Clone> Returns<T> {
-    pub fn get_by_params(&mut self) -> T {
+impl<R: Clone> Returns<R> {
+    pub fn get_by_params(&mut self) -> R {
         match self.return_values.split_first() {
             Some((Return::Always(value), _)) => value.clone(),
             Some((Return::Once(value), tail)) => {
@@ -57,7 +57,7 @@ impl<T: Clone> Returns<T> {
     }
 }
 
-impl<T> Default for Returns<T> {
+impl<R> Default for Returns<R> {
     fn default() -> Self {
         Returns {
             return_values: Vec::new(),
