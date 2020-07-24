@@ -4,25 +4,42 @@ pub enum Return<T> {
     Always(T),
 }
 
+pub fn returns<T>(value: T) -> ReturnsBuilder<T> {
+    ReturnsBuilder {
+        previous: Returns::default(),
+        new_result: value
+    }
+}
+
+impl<T> ReturnsBuilder<T> {
+    pub fn once(mut self) -> Returns<T> {
+        self.previous.return_values.push(Return::Once(self.new_result));
+        self.previous
+    }
+
+    pub fn always(mut self) -> Returns<T> {
+        self.previous.return_values.push(Return::Always(self.new_result));
+        self.previous
+    }
+}
+
+pub struct ReturnsBuilder<T> {
+    pub(self) previous: Returns<T>,
+    pub(self) new_result: T
+}
+
 /// Stores the set of return values for a stubbed method where T is the return type and implements
 /// the fluent interface for specifying the return values
 pub struct Returns<T> {
-    return_values: Vec<Return<T>>,
-}
-
-pub fn returns<T>() -> Returns<T> {
-    Returns::default()
+    pub(self) return_values: Vec<Return<T>>,
 }
 
 impl<T> Returns<T> {
-    pub fn once(mut self, value: T) -> Self {
-        self.return_values.push(Return::Once(value));
-        self
-    }
-
-    pub fn always(mut self, value: T) -> Self {
-        self.return_values.push(Return::Always(value));
-        self
+    pub fn returns(self, value: T) -> ReturnsBuilder<T> {
+        ReturnsBuilder {
+            previous: self,
+            new_result: value
+        }
     }
 }
 
@@ -60,7 +77,7 @@ mod tests {
     impl TestStub {
         fn arrange() -> Self {
             TestStub {
-                on_test_method: returns().always(Ok(())),
+                on_test_method: returns(Ok(())).always(),
             }
         }
 
@@ -96,7 +113,7 @@ mod tests {
     #[test]
     fn should_return_arranged_result() {
         let mut stub = TestStub::arrange()
-            .test_method(returns().once(Err(TestError::StubbedError)))
+            .test_method(returns(Err(TestError::StubbedError)).once())
             .go();
 
         assert_eq!(
@@ -109,7 +126,7 @@ mod tests {
     #[should_panic(expected = "No expected result available")]
     fn should_return_once_result_only_once() {
         let mut stub = TestStub::arrange()
-            .test_method(returns().once(Err(TestError::StubbedError)))
+            .test_method(returns(Err(TestError::StubbedError)).once())
             .go();
 
         assert_eq!(
@@ -125,7 +142,9 @@ mod tests {
     #[should_panic(expected = "No expected result available")]
     fn should_sequence_multiple_once_results() {
         let mut stub = TestStub::arrange()
-            .test_method(returns().once(Err(TestError::StubbedError)).once(Ok(())))
+            .test_method(
+                returns(Err(TestError::StubbedError)).once()
+                .returns(Ok(())).once())
             .go();
 
         // The first time should return the first result
@@ -144,7 +163,7 @@ mod tests {
     #[test]
     fn should_return_always_result_multiple_times() {
         let mut stub = TestStub::arrange()
-            .test_method(returns().always(Err(TestError::StubbedError)))
+            .test_method(returns(Err(TestError::StubbedError)).always())
             .go();
 
         for _ in [0..20].iter() {
@@ -158,7 +177,7 @@ mod tests {
     #[test]
     fn should_return_always_result_after_once() {
         let mut stub = TestStub::arrange()
-            .test_method(returns().once(Ok(())).always(Err(TestError::StubbedError)))
+            .test_method(returns(Ok(())).once().returns(Err(TestError::StubbedError)).always())
             .go();
 
         // First return the 'once' result

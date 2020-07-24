@@ -12,8 +12,8 @@ pub struct SpiStub {
 impl SpiStub {
     pub fn arrange() -> Self {
         SpiStub {
-            on_write: returns().always(Ok(())),
-            on_write_iter: returns().always(Ok(())),
+            on_write: returns(Ok(())).always(),
+            on_write_iter: returns(Ok(())).always(),
         }
     }
 
@@ -80,7 +80,7 @@ mod tests {
     #[test]
     fn should_arrange_results_for_try_write() {
         let mut stub = SpiStub::arrange()
-            .try_write(returns().once(Err(TestError::StubbedError)))
+            .try_write(returns(Err(TestError::StubbedError)).once())
             .go();
         assert_eq!(stub.try_write(&[]), Err(TestError::StubbedError));
     }
@@ -94,7 +94,7 @@ mod tests {
     #[test]
     fn should_arrange_results_for_try_write_iter() {
         let mut stub = SpiStub::arrange()
-            .try_write_iter(returns().once(Err(TestError::StubbedError)))
+            .try_write_iter(returns(Err(TestError::StubbedError)).once())
             .go();
 
         assert_eq!(
