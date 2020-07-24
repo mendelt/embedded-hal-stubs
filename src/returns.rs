@@ -7,25 +7,36 @@ pub enum Return<R> {
 pub fn returns<R>(value: R) -> ReturnsBuilder<R> {
     ReturnsBuilder {
         previous: Returns::default(),
-        new_result: value
+        new_result: value,
     }
 }
 
 impl<R> ReturnsBuilder<R> {
     pub fn once(mut self) -> Returns<R> {
-        self.previous.return_values.push(Return::Times(self.new_result, 1));
+        self.previous
+            .return_values
+            .push(Return::Times(self.new_result, 1));
+        self.previous
+    }
+
+    pub fn twice(mut self) -> Returns<R> {
+        self.previous
+            .return_values
+            .push(Return::Times(self.new_result, 2));
         self.previous
     }
 
     pub fn always(mut self) -> Returns<R> {
-        self.previous.return_values.push(Return::Always(self.new_result));
+        self.previous
+            .return_values
+            .push(Return::Always(self.new_result));
         self.previous
     }
 }
 
 pub struct ReturnsBuilder<R> {
     pub(self) previous: Returns<R>,
-    pub(self) new_result: R
+    pub(self) new_result: R,
 }
 
 /// Stores the set of return values for a stubbed method where T is the return type and implements
@@ -38,7 +49,7 @@ impl<R> Returns<R> {
     pub fn returns(self, value: R) -> ReturnsBuilder<R> {
         ReturnsBuilder {
             previous: self,
-            new_result: value
+            new_result: value,
         }
     }
 }
@@ -50,6 +61,11 @@ impl<R: Clone> Returns<R> {
             Some((Return::Times(value, 1), tail)) => {
                 let result = value.clone();
                 self.return_values = tail.to_vec();
+                result
+            }
+            Some((Return::Times(value, n), _)) => {
+                let result = value.clone();
+                self.return_values[0] = Return::Times(value.clone(), n-1);
                 result
             }
             _ => panic!("No expected result available"),
@@ -140,11 +156,34 @@ mod tests {
 
     #[test]
     #[should_panic(expected = "No expected result available")]
+    fn should_return_twice_results_twice() {
+        let mut stub = TestStub::arrange()
+            .test_method(returns(Err(TestError::StubbedError)).twice())
+            .go();
+
+        assert_eq!(
+            stub.test_method(&[8u8, 7u8, 6u8]),
+            Err(TestError::StubbedError)
+        );
+        assert_eq!(
+            stub.test_method(&[8u8, 7u8, 6u8]),
+            Err(TestError::StubbedError)
+        );
+
+        // This should panic the third time it's called
+        stub.test_method(&[8u8, 7u8, 6u8]).ok();
+    }
+
+    #[test]
+    #[should_panic(expected = "No expected result available")]
     fn should_sequence_multiple_once_results() {
         let mut stub = TestStub::arrange()
             .test_method(
-                returns(Err(TestError::StubbedError)).once()
-                .returns(Ok(())).once())
+                returns(Err(TestError::StubbedError))
+                    .once()
+                    .returns(Ok(()))
+                    .once(),
+            )
             .go();
 
         // The first time should return the first result
@@ -177,7 +216,12 @@ mod tests {
     #[test]
     fn should_return_always_result_after_once() {
         let mut stub = TestStub::arrange()
-            .test_method(returns(Ok(())).once().returns(Err(TestError::StubbedError)).always())
+            .test_method(
+                returns(Ok(()))
+                    .once()
+                    .returns(Err(TestError::StubbedError))
+                    .always(),
+            )
             .go();
 
         // First return the 'once' result

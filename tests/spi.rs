@@ -1,7 +1,7 @@
+use embedded_hal::blocking::spi::{Write, WriteIter};
 use embedded_hal_stubs::blocking::spi::SpiStub;
 use embedded_hal_stubs::error::TestError;
 use embedded_hal_stubs::returns::returns;
-use embedded_hal::blocking::spi::{WriteIter, Write};
 
 #[test]
 fn should_return_default_result_for_try_write() {
