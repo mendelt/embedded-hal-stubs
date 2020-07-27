@@ -26,6 +26,11 @@ impl<R> ReturnsBuilder<R> {
         self.previous
     }
 
+    pub fn times(mut self, n: i32) -> Returns<R> {
+        self.previous.return_values.push(Return::Times(self.new_result, n));
+        self.previous
+    }
+
     pub fn always(mut self) -> Returns<R> {
         self.previous
             .return_values
@@ -166,16 +171,36 @@ mod tests {
             .test_method(returns(Err(TestError::StubbedError)).twice())
             .go();
 
-        assert_eq!(
-            stub.test_method(&[8u8, 7u8, 6u8]),
-            Err(TestError::StubbedError)
-        );
-        assert_eq!(
-            stub.test_method(&[8u8, 7u8, 6u8]),
-            Err(TestError::StubbedError)
-        );
+        for _ in 0..2 {
+            assert_eq!(
+                stub.test_method(&[8u8, 7u8, 6u8]),
+                Err(TestError::StubbedError)
+            );
+        }
 
         // This should panic the third time
+        assert_panics!(
+            {
+                let mut stub = stub;
+                stub.test_method(&[]).ok();
+            },
+            includes("No expected result available")
+        );
+    }
+
+    #[test]
+    fn should_return_times_returns_n_times() {
+        let n = 48;
+        let mut stub = TestStub::arrange()
+            .test_method(returns(Err(TestError::StubbedError)).times(n)).go();
+
+        for _ in 0..n {
+            assert_eq!(
+                stub.test_method(&[]),
+                Err(TestError::StubbedError)
+            );
+        }
+
         assert_panics!(
             {
                 let mut stub = stub;
