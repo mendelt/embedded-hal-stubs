@@ -85,6 +85,7 @@ impl<R> Default for Returns<R> {
 mod tests {
     use super::*;
     use crate::error::TestError;
+    use cool_asserts::assert_panics;
 
     struct TestStub {
         on_test_method: Returns<Result<(), TestError>>,
@@ -139,7 +140,6 @@ mod tests {
     }
 
     #[test]
-    #[should_panic(expected = "No expected result available")]
     fn should_return_once_result_only_once() {
         let mut stub = TestStub::arrange()
             .test_method(returns(Err(TestError::StubbedError)).once())
@@ -151,11 +151,13 @@ mod tests {
         );
 
         // This should panic the second time it's called
-        stub.test_method(&[8u8, 7u8, 6u8]).ok();
+        assert_panics!({
+            let mut stub = stub;
+            stub.test_method(&[]).ok();
+        }, includes("No expected result available") );
     }
 
     #[test]
-    #[should_panic(expected = "No expected result available")]
     fn should_return_twice_results_twice() {
         let mut stub = TestStub::arrange()
             .test_method(returns(Err(TestError::StubbedError)).twice())
@@ -170,12 +172,14 @@ mod tests {
             Err(TestError::StubbedError)
         );
 
-        // This should panic the third time it's called
-        stub.test_method(&[8u8, 7u8, 6u8]).ok();
+        // This should panic the third time
+        assert_panics!({
+            let mut stub = stub;
+            stub.test_method(&[]).ok();
+        }, includes("No expected result available") );
     }
 
     #[test]
-    #[should_panic(expected = "No expected result available")]
     fn should_sequence_multiple_once_results() {
         let mut stub = TestStub::arrange()
             .test_method(
@@ -196,7 +200,10 @@ mod tests {
         assert_eq!(stub.test_method(&[8u8, 7u8, 6u8]), Ok(()));
 
         // Panic after that
-        stub.test_method(&[8u8, 7u8, 6u8]).ok();
+        assert_panics!({
+            let mut stub = stub;
+            stub.test_method(&[]).ok();
+        }, includes("No expected result available") );
     }
 
     #[test]

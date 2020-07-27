@@ -8,3 +8,6 @@ edition = "2018"
 
 [dependencies]
 embedded-hal = "1.0.0-alpha.1"
+
+[dev-dependencies]
+cool_asserts = "1.0.2"
