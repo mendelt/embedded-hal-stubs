@@ -58,14 +58,14 @@ impl<R: Clone> Returns<R> {
     pub fn get_by_params(&mut self) -> R {
         match self.return_values.split_first() {
             Some((Return::Always(value), _)) => value.clone(),
-            Some((Return::Times(value, 1), tail)) => {
+            Some((Return::Times(value, n), tail)) if *n <= 1i32 => {
                 let result = value.clone();
                 self.return_values = tail.to_vec();
                 result
             }
             Some((Return::Times(value, n), _)) => {
                 let result = value.clone();
-                self.return_values[0] = Return::Times(value.clone(), n-1);
+                self.return_values[0] = Return::Times(value.clone(), n - 1);
                 result
             }
             _ => panic!("No expected result available"),
@@ -151,10 +151,13 @@ mod tests {
         );
 
         // This should panic the second time it's called
-        assert_panics!({
-            let mut stub = stub;
-            stub.test_method(&[]).ok();
-        }, includes("No expected result available") );
+        assert_panics!(
+            {
+                let mut stub = stub;
+                stub.test_method(&[]).ok();
+            },
+            includes("No expected result available")
+        );
     }
 
     #[test]
@@ -173,10 +176,13 @@ mod tests {
         );
 
         // This should panic the third time
-        assert_panics!({
-            let mut stub = stub;
-            stub.test_method(&[]).ok();
-        }, includes("No expected result available") );
+        assert_panics!(
+            {
+                let mut stub = stub;
+                stub.test_method(&[]).ok();
+            },
+            includes("No expected result available")
+        );
     }
 
     #[test]
@@ -200,10 +206,13 @@ mod tests {
         assert_eq!(stub.test_method(&[8u8, 7u8, 6u8]), Ok(()));
 
         // Panic after that
-        assert_panics!({
-            let mut stub = stub;
-            stub.test_method(&[]).ok();
-        }, includes("No expected result available") );
+        assert_panics!(
+            {
+                let mut stub = stub;
+                stub.test_method(&[]).ok();
+            },
+            includes("No expected result available")
+        );
     }
 
     #[test]
