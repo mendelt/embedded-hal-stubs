@@ -27,7 +27,9 @@ impl<R> ReturnsBuilder<R> {
     }
 
     pub fn times(mut self, n: u32) -> Returns<R> {
-        self.previous.return_values.push(Return::Times(self.new_result, n));
+        self.previous
+            .return_values
+            .push(Return::Times(self.new_result, n));
         self.previous
     }
 
@@ -60,7 +62,8 @@ impl<R> Returns<R> {
 }
 
 impl<R: Clone> Returns<R> {
-    pub fn get_by_params(&mut self) -> R {
+    /// Get a matching result for a method call
+    pub fn get_match(&mut self) -> R {
         match self.return_values.split_first() {
             Some((Return::Always(value), _)) => value.clone(),
             Some((Return::Times(value, n), tail)) if *n <= 1u32 => {
@@ -121,7 +124,7 @@ mod tests {
 
     impl TestStubRunner {
         fn test_method(&mut self, _: &[u8]) -> Result<(), TestError> {
-            self.on_test_method.get_by_params()
+            self.on_test_method.get_match()
         }
     }
 
@@ -192,13 +195,11 @@ mod tests {
     fn should_return_times_returns_n_times() {
         let n = 48;
         let mut stub = TestStub::arrange()
-            .test_method(returns(Err(TestError::StubbedError)).times(n)).go();
+            .test_method(returns(Err(TestError::StubbedError)).times(n))
+            .go();
 
         for _ in 0..n {
-            assert_eq!(
-                stub.test_method(&[]),
-                Err(TestError::StubbedError)
-            );
+            assert_eq!(stub.test_method(&[]), Err(TestError::StubbedError));
         }
 
         assert_panics!(

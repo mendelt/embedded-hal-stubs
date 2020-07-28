@@ -44,7 +44,7 @@ impl Write<u8> for SpiStubRunner {
     type Error = TestError;
 
     fn try_write(&mut self, _: &[u8]) -> Result<(), Self::Error> {
-        self.on_write.get_by_params()
+        self.on_write.get_match()
     }
 }
 
@@ -63,6 +63,6 @@ impl WriteIter<u8> for SpiStubRunner {
     where
         WI: IntoIterator<Item = u8>,
     {
-        self.on_write_iter.get_by_params()
+        self.on_write_iter.get_match()
     }
 }
