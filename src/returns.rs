@@ -4,6 +4,23 @@ pub enum Return<R> {
     Always(R),
 }
 
+impl<R> Return<R>
+where
+    R: Clone,
+{
+    /// Returns Some<R> if the result matches a specified method-call
+    pub fn matches(&mut self) -> Option<R> {
+        match self {
+            Return::Times(result, count) if *count > 0u32 => {
+                *count -= 1;
+                Some(result.clone())
+            }
+            Return::Times(result, count) => None,
+            Return::Always(result) => Some(result.clone()),
+        }
+    }
+}
+
 pub fn returns<R>(value: R) -> ReturnsBuilder<R> {
     ReturnsBuilder {
         previous: Returns::default(),
@@ -64,18 +81,13 @@ impl<R> Returns<R> {
 impl<R: Clone> Returns<R> {
     /// Get a matching result for a method call
     pub fn get_match(&mut self) -> R {
-        match self.return_values.split_first() {
-            Some((Return::Always(value), _)) => value.clone(),
-            Some((Return::Times(value, n), tail)) if *n <= 1u32 => {
-                let result = value.clone();
-                self.return_values = tail.to_vec();
-                result
-            }
-            Some((Return::Times(value, n), _)) => {
-                let result = value.clone();
-                self.return_values[0] = Return::Times(value.clone(), n - 1);
-                result
-            }
+        match self
+            .return_values
+            .iter_mut()
+            .filter_map(Return::matches)
+            .next()
+        {
+            Some(result) => result,
             _ => panic!("No expected result available"),
         }
     }
