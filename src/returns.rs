@@ -1,6 +1,6 @@
 #[derive(Clone)]
 pub enum Return<R> {
-    Times(R, i32),
+    Times(R, u32),
     Always(R),
 }
 
@@ -26,7 +26,7 @@ impl<R> ReturnsBuilder<R> {
         self.previous
     }
 
-    pub fn times(mut self, n: i32) -> Returns<R> {
+    pub fn times(mut self, n: u32) -> Returns<R> {
         self.previous.return_values.push(Return::Times(self.new_result, n));
         self.previous
     }
@@ -63,7 +63,7 @@ impl<R: Clone> Returns<R> {
     pub fn get_by_params(&mut self) -> R {
         match self.return_values.split_first() {
             Some((Return::Always(value), _)) => value.clone(),
-            Some((Return::Times(value, n), tail)) if *n <= 1i32 => {
+            Some((Return::Times(value, n), tail)) if *n <= 1u32 => {
                 let result = value.clone();
                 self.return_values = tail.to_vec();
                 result
