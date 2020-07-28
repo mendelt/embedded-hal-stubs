@@ -15,7 +15,7 @@ where
                 *count -= 1;
                 Some(result.clone())
             }
-            Return::Times(result, count) => None,
+            Return::Times(_result, _count) => None,
             Return::Always(result) => Some(result.clone()),
         }
     }
