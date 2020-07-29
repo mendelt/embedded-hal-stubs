@@ -1,4 +1,4 @@
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct Return<R> {
     result: R,
     times: Option<u32>,
@@ -28,6 +28,7 @@ pub fn returns<R>(value: R) -> ReturnsBuilder<R> {
     }
 }
 
+#[derive(Debug)]
 pub struct ReturnsBuilder<R> {
     pub(self) previous: Returns<R>,
     pub(self) new_result: R,
@@ -69,6 +70,7 @@ impl<R> ReturnsBuilder<R> {
 
 /// Stores the set of return values for a stubbed method where T is the return type and implements
 /// the fluent interface for specifying the return values
+#[derive(Debug)]
 pub struct Returns<R> {
     pub(self) return_values: Vec<Return<R>>,
 }

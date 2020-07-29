@@ -1,3 +1,5 @@
+//! This module contains types for stubbing embedded-hal SPI traits
+
 use crate::{
     error::TestError,
     returns::{returns, Returns},
@@ -6,7 +8,8 @@ use embedded_hal::blocking::spi::{Transfer, Write, WriteIter};
 
 /// Entry point for stubbing the embedded-hal SPI traits. This is a builder that can be used to
 /// program the behavior of SPI trait methods. The ```go```-method then builds a SpiStubRunner
-/// struct that implements the needed traits and can be used as a stub for testing SPI behavior. 
+/// struct that implements the needed traits and can be used as a stub for testing SPI behavior.
+#[derive(Debug)]
 pub struct SpiStub {
     on_write: Returns<Result<(), TestError>>,
     on_write_iter: Returns<Result<(), TestError>>,
@@ -42,6 +45,7 @@ impl SpiStub {
     }
 }
 
+#[derive(Debug)]
 pub struct SpiStubRunner {
     on_write: Returns<Result<(), TestError>>,
     on_write_iter: Returns<Result<(), TestError>>,
