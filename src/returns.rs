@@ -1,7 +1,7 @@
 #[derive(Clone)]
-pub enum Return<R> {
-    Times(R, u32),
-    Always(R),
+pub struct Return<R> {
+    result: R,
+    times: Option<u32>,
 }
 
 impl<R> Return<R>
@@ -10,13 +10,13 @@ where
 {
     /// Returns Some<R> if the result matches a specified method-call
     pub fn matches(&mut self) -> Option<R> {
-        match self {
-            Return::Times(result, count) if *count > 0u32 => {
-                *count -= 1;
-                Some(result.clone())
+        match self.times {
+            None => Some(self.result.clone()),
+            Some(count) if count == 0 => None,
+            Some(count) => {
+                self.times = Some(count - 1);
+                Some(self.result.clone())
             }
-            Return::Times(_result, _count) => None,
-            Return::Always(result) => Some(result.clone()),
         }
     }
 }
@@ -30,30 +30,34 @@ pub fn returns<R>(value: R) -> ReturnsBuilder<R> {
 
 impl<R> ReturnsBuilder<R> {
     pub fn once(mut self) -> Returns<R> {
-        self.previous
-            .return_values
-            .push(Return::Times(self.new_result, 1));
+        self.previous.return_values.push(Return {
+            result: self.new_result,
+            times: Some(1),
+        });
         self.previous
     }
 
     pub fn twice(mut self) -> Returns<R> {
-        self.previous
-            .return_values
-            .push(Return::Times(self.new_result, 2));
+        self.previous.return_values.push(Return {
+            result: self.new_result,
+            times: Some(2),
+        });
         self.previous
     }
 
     pub fn times(mut self, n: u32) -> Returns<R> {
-        self.previous
-            .return_values
-            .push(Return::Times(self.new_result, n));
+        self.previous.return_values.push(Return {
+            result: self.new_result,
+            times: Some(n),
+        });
         self.previous
     }
 
     pub fn always(mut self) -> Returns<R> {
-        self.previous
-            .return_values
-            .push(Return::Always(self.new_result));
+        self.previous.return_values.push(Return {
+            result: self.new_result,
+            times: None,
+        });
         self.previous
     }
 }
