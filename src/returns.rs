@@ -28,6 +28,11 @@ pub fn returns<R>(value: R) -> ReturnsBuilder<R> {
     }
 }
 
+pub struct ReturnsBuilder<R> {
+    pub(self) previous: Returns<R>,
+    pub(self) new_result: R,
+}
+
 impl<R> ReturnsBuilder<R> {
     pub fn once(mut self) -> Returns<R> {
         self.previous.return_values.push(Return {
@@ -60,11 +65,6 @@ impl<R> ReturnsBuilder<R> {
         });
         self.previous
     }
-}
-
-pub struct ReturnsBuilder<R> {
-    pub(self) previous: Returns<R>,
-    pub(self) new_result: R,
 }
 
 /// Stores the set of return values for a stubbed method where T is the return type and implements
