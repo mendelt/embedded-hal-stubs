@@ -4,12 +4,16 @@ use crate::{
 };
 use embedded_hal::blocking::spi::{Transfer, Write, WriteIter};
 
+/// Entry point for stubbing the embedded-hal SPI traits. This is a builder that can be used to
+/// program the behavior of SPI trait methods. The ```go```-method then builds a SpiStubRunner
+/// struct that implements the needed traits and can be used as a stub for testing SPI behavior. 
 pub struct SpiStub {
     on_write: Returns<Result<(), TestError>>,
     on_write_iter: Returns<Result<(), TestError>>,
 }
 
 impl SpiStub {
+    /// Initialize a SpiStub builder
     pub fn arrange() -> Self {
         SpiStub {
             on_write: returns(Ok(())).always(),
@@ -17,16 +21,19 @@ impl SpiStub {
         }
     }
 
+    /// Program try_write behavior.
     pub fn try_write(mut self, values: Returns<Result<(), TestError>>) -> Self {
         self.on_write = values;
         self
     }
 
+    /// Program try_write_iter behavior
     pub fn try_write_iter(mut self, result: Returns<Result<(), TestError>>) -> Self {
         self.on_write_iter = result;
         self
     }
 
+    /// Finalize builder and return a SpiStubRunner
     pub fn go(self) -> SpiStubRunner {
         SpiStubRunner {
             on_write: self.on_write,
