@@ -45,6 +45,8 @@ impl SpiStub {
     }
 }
 
+/// The SpiStubRunner is returned by the SpiStub after it is finalized by calling ```SpiStub::go```. 
+/// The SpiStubRunner handles the actual Spi calls during execution of tests.
 #[derive(Debug)]
 pub struct SpiStubRunner {
     on_write: Returns<Result<(), TestError>>,
