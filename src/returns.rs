@@ -1,3 +1,7 @@
+//! This module defines several types that together implement a fluent API for programming what
+//! values are returned when a stubbed method is called during a test.
+
+/// One single return value programmed on a stub method
 #[derive(Clone, Debug)]
 pub struct Return<R> {
     result: R,
@@ -21,6 +25,8 @@ where
     }
 }
 
+/// entry point for the fluent interface for programming stub methods. Creates a ReturnsBuilder
+/// struct that can be used to progressively build a Returns object
 pub fn returns<R>(value: R) -> ReturnsBuilder<R> {
     ReturnsBuilder {
         previous: Returns::default(),
@@ -28,6 +34,9 @@ pub fn returns<R>(value: R) -> ReturnsBuilder<R> {
     }
 }
 
+/// ReturnsBuilder is a builder struct that implements a fluent interface for building Returns
+/// structs. It can be used to set what will be returned by `embedded-hal` stubbed methods when they
+/// are called, how often and under what circumstances.
 #[derive(Debug)]
 pub struct ReturnsBuilder<R> {
     pub(self) previous: Returns<R>,
@@ -35,6 +44,7 @@ pub struct ReturnsBuilder<R> {
 }
 
 impl<R> ReturnsBuilder<R> {
+    /// Return this result only once
     pub fn once(mut self) -> Returns<R> {
         self.previous.return_values.push(Return {
             result: self.new_result,
@@ -43,6 +53,7 @@ impl<R> ReturnsBuilder<R> {
         self.previous
     }
 
+    /// Return this result twice
     pub fn twice(mut self) -> Returns<R> {
         self.previous.return_values.push(Return {
             result: self.new_result,
@@ -51,6 +62,7 @@ impl<R> ReturnsBuilder<R> {
         self.previous
     }
 
+    /// Return this result n times
     pub fn times(mut self, n: u32) -> Returns<R> {
         self.previous.return_values.push(Return {
             result: self.new_result,
@@ -59,6 +71,7 @@ impl<R> ReturnsBuilder<R> {
         self.previous
     }
 
+    /// Always return this result
     pub fn always(mut self) -> Returns<R> {
         self.previous.return_values.push(Return {
             result: self.new_result,
@@ -76,6 +89,8 @@ pub struct Returns<R> {
 }
 
 impl<R> Returns<R> {
+    /// Return a ReturnsBuilder on top of this Returns struct. This is used to chain several return
+    /// values
     pub fn returns(self, value: R) -> ReturnsBuilder<R> {
         ReturnsBuilder {
             previous: self,
