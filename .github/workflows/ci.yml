@@ -29,6 +29,29 @@ jobs:
           command: fmt
           args: --all -- --check
 
+  warnings:
+    name: Check for warnings
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        rust:
+          - stable
+          - beta
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: ${{ matrix.rust }}
+          override: true
+      - name: set rust options
+        uses: allenevans/set-env@v1.1.0
+        with:
+          RUSTFLAGS: "-D warnings"
+      - uses: actions-rs/cargo@v1
+        with:
+          command: check
+
   test:
     name: Test
     runs-on: ubuntu-latest
