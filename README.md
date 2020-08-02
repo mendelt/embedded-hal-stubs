@@ -1,4 +1,5 @@
 # Experimental Rust lib for mock and stub helpers for the embedded HAL library
+[![Build Status](https://github.com/mendelt/embedded-hal-stubs/workflows/Build/badge.svg))](https://github.com/mendelt/embedded-hal-stubs/actions?query=workflow%3ABuild+event%3Apush+branch%3Amaster)
 This is an experimental library to see if it is possible to write a test helpers for the Embedded
 HAL that allow for a more AAA (Arrange, Act, Assert) style of testing, while giving the user the
 freedom to choose to use the helpers either as Stubs or as Mocks.
